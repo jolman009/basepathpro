@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import StoreProvider from '../providers/StoreProvider';
+import StoreProvider from './providers/StoreProvider';
 import TopNav from '../components/navigation/TopNav';
 import MobileNav from '../components/navigation/MobileNav';
 import HomeScreen from '../features/home/HomeScreen';

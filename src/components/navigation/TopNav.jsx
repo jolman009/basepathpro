@@ -1,8 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Camera, Upload, Play, PenTool, User, BarChart3, Home, Film, LineChart, Bell, Search } from "lucide-react";
+import { Home, Film, LineChart, Bell, Search, User } from "lucide-react";
 import { motion } from "framer-motion";
-import { BrowserRouter as Router, Routes, Route, NavLink, useNavigate, useParams } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 /* -------------------- Top Navigation -------------------- */
 function TopNav() {
