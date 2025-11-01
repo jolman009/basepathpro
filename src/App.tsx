@@ -1,5 +1,6 @@
 // src/App.tsx
-import SoftballCoachApp from './SoftballTrainingAppUi'; // <-- adjust this path/filename to your canvas file
+import SoftballCoachApp from './app/AppShell';
+
 export default function App() {
   return <SoftballCoachApp />;
 }

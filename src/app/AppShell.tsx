@@ -1,8 +1,16 @@
 import React, { Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import TopNav from '@/components/TopNav';
-import MobileNav from '@/components/MobileNav';
-import { HomeScreen, AthletesScreen, AthleteProfileScreen, VideosScreen, VideoDetailScreen, AnalyticsScreen, AnalyzeScreen, VideoPreviewModal } from '@/features'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import StoreProvider from '../providers/StoreProvider';
+import TopNav from '../components/navigation/TopNav';
+import MobileNav from '../components/navigation/MobileNav';
+import HomeScreen from '../features/home/HomeScreen';
+import AthletesScreen from '../features/athletes/pages/AthletesScreen';
+import AthleteProfileScreen from '../features/athletes/pages/AthleteProfileScreen';
+import VideosScreen from '../features/videos/pages/VideosScreen';
+import VideoDetailScreen from '../features/videos/pages/VideoDetailScreen';
+import AnalyticsScreen from '../features/analytics/pages/AnalyticsScreen';
+import AnalyzeScreen from '../features/analyze/pages/AnalyzeScreen';
+import VideoPreviewModal from './modals/VideoPreviewModal';
 
 export default function SoftballCoachApp() {
   return (
@@ -34,7 +42,7 @@ function AppShell() {
         </Routes>
         {background && (
           <Routes>
-            <Route path="/videos/:id" element={<VideoPreviewModal />} />
+            <Route path="/videos/:id" element={<VideoPreviewModal open={true} />} />
           </Routes>
         )}
       </Suspense>
