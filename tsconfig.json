@@ -12,8 +12,10 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "./"
-    ,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "types": ["vite/client", "vitest"]
   },
   "include": ["src"]
