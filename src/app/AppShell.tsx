@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import StoreProvider from './providers/StoreProvider';
 import TopNav from '../components/navigation/TopNav';
 import MobileNav from '../components/navigation/MobileNav';
-import HomeScreen from '../features/home/HomeScreen';
+// @ts-ignore
+import HomeScreen from '../pages/HomeScreen';
 import AthletesScreen from '../features/athletes/pages/AthletesScreen';
 import AthleteProfileScreen from '../features/athletes/pages/AthleteProfileScreen';
 import VideosScreen from '../features/videos/pages/VideosScreen';
