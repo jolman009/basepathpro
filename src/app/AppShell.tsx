@@ -4,7 +4,7 @@ import StoreProvider from './providers/StoreProvider';
 import TopNav from '../components/navigation/TopNav';
 import MobileNav from '../components/navigation/MobileNav';
 // @ts-ignore
-import HomeScreen from '../pages/HomeScreen';
+import HomeScreen from '../features/home/HomeScreen';
 import AthletesScreen from '../features/athletes/pages/AthletesScreen';
 import AthleteProfileScreen from '../features/athletes/pages/AthleteProfileScreen';
 import VideosScreen from '../features/videos/pages/VideosScreen';
