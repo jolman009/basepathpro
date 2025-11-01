@@ -1,0 +1,12 @@
+# Node modules and caches
+node_modules/
+pnpm-lock.yaml
+npm-debug.log*
+dist/
+# Vite cache
+.vite/
+# Local env files
+.env*
+# OS-specific files
+.DS_Store
+Thumbs.db
