@@ -1,0 +1,332 @@
+*** Begin Patch
+*** Update File: src/features/athletes/hooks/useAthletes.ts
+@@
++import { useState, useEffect, useCallback } from 'react';
++import { fetchAthletes, createAthlete } from '../services/athletes.service';
+-
+
++  const [athletes, setAthletes] = useState<any[]>([]);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState<string | null>(null);
++
++  const refresh = useCallback(async () => {
++    setLoading(true);
++    try {
++      const list = await fetchAthletes();
++      setAthletes(list);
++      setError(null);
++    } catch (e: any) {
++      setError(e.message ?? 'Failed to load athletes');
++    } finally {
++      setLoading(false);
++    }
++  }, []);
++
++  useEffect(() => {
++    void refresh();
++  }, [refresh]);
++
++  const addAthlete = useCallback(async (payload: { name: string; position?: string; notes?: string }) => {
++    const created = await createAthlete(payload);
++    if (created) {
++      setAthletes(prev => [created, ...prev]);
++    }
++    return created;
++  }, []);
++
++  return { athletes, loading, error, refresh, addAthlete };
+ }
+*** End Patch
+
+*** Begin Patch
+*** Update File: src/features/videos/hooks/useVideos.ts
+@@
+
++import { useState, useEffect, useCallback } from 'react';
++import { fetchVideos, uploadVideo } from '../services/videos.service';
++
++export function useVideos() {
++  const [videos, setVideos] = useState<any[]>([]);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState<string | null>(null);
++
++  const refresh = useCallback(async () => {
++    setLoading(true);
++    try {
++      const list = await fetchVideos();
++      setVideos(list);
++      setError(null);
++    } catch (e: any) {
++      setError(e.message ?? 'Failed to load videos');
++    } finally {
++      setLoading(false);
++    }
++  }, []);
++
++  useEffect(() => {
++    void refresh();
++  }, [refresh]);
++
++  const addVideo = useCallback(async (file: File) => {
++    const created = await uploadVideo(file);
++    if (created) {
++      setVideos(prev => [created, ...prev]);
++    }
++    return created;
++  }, []);
++
++  return { videos, loading, error, refresh, addVideo };
++}
+*** End Patch
+
+*** Begin Patch
+*** Update File: src/features/athletes/components/AddAthleteModal.tsx
+@@
+-import React, { useState } from 'react';
+-import { createAthlete } from '../services/athletes.service';
++import React, { useState } from 'react';
+@@
+-interface Props {
+-  open: boolean;
+-  onClose: () => void;
+-  onCreate?: (athlete: any) => void; // pass created athlete back to parent
+-}
++interface Props {
++  open: boolean;
++  onClose: () => void;
++  onCreate: (payload: { name: string; position?: string; notes?: string }) => Promise<void>;
++}
+@@
+ export default function AddAthleteModal({ open, onClose, onCreate }: Props) {
+@@
+-  async function handleSubmit(e: React.FormEvent) {
+-    e.preventDefault();
+-    if (!name.trim()) return;
+-    setLoading(true);
+-    const athlete = await createAthlete({ name, position, notes });
+-    setLoading(false);
+-    if (athlete) {
+-      onCreate?.(athlete);
+-      setName(''); setPosition(''); setNotes('');
+-      onClose();
+-    }
+-  }
++  async function handleSubmit(e: React.FormEvent) {
++    e.preventDefault();
++    if (!name.trim()) return;
++    setLoading(true);
++    await onCreate({ name, position, notes });
++    setLoading(false);
++    setName('');
++    setPosition('');
++    setNotes('');
++    onClose();
++  }
+*** End Patch
+
+*** Begin Patch
+*** Update File: src/features/athletes/pages/AthletesScreen.tsx
+@@
+-import React, { useState } from 'react';
+-import { useAthletes } from '../hooks/useAthletes';
+-import AddAthleteModal from '../components/AddAthleteModal';
+-
+-export default function AthletesScreen() {
+-  const { athletes, setAthletes } = useAthletes();
+-  const [showModal, setShowModal] = useState(false);
+-
+-  function handleCreate(newAthlete: any) {
+-    // Prepend the new athlete to the list
+-    setAthletes((prev) => [newAthlete, ...prev]);
+-  }
+-
+-  return (
+-    <main className="mx-auto max-w-6xl px-4 pb-28 pt-6">
+-      <div className="flex justify-between items-center mb-4">
+-        <h1 className="text-2xl md:text-3xl font-extrabold text-blue-700 dark:text-blue-300">
+-          Athletes
+-        </h1>
+-        <button
+-          onClick={() => setShowModal(true)}
+-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+-        >
+-          + Add Athlete
+-        </button>
+-      </div>
+-
+-      {athletes.length === 0 ? (
+-        <p className="text-gray-600 dark:text-gray-400">No athletes yet.</p>
+-      ) : (
+-        <ul className="space-y-3">
+-          {athletes.map((ath) => (
+-            <li
+-              key={ath.id}
+-              className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800"
+-            >
+-              <div className="font-semibold">{ath.name}</div>
+-              <div className="text-sm text-gray-500 dark:text-gray-400">
+-                {ath.position || 'No position'} &nbsp;|&nbsp; {ath.notes || 'No notes'}
+-              </div>
+-            </li>
+-          ))}
+-        </ul>
+-      )}
+-
+-      <AddAthleteModal
+-        open={showModal}
+-        onClose={() => setShowModal(false)}
+-        onCreate={handleCreate}
+-      />
+-    </main>
+-  );
+-}
++import React, { useState } from 'react';
++import { useAthletes } from '../hooks/useAthletes';
++import AddAthleteModal from '../components/AddAthleteModal';
++
++export default function AthletesScreen() {
++  const { athletes, addAthlete } = useAthletes();
++  const [showModal, setShowModal] = useState(false);
++
++  return (
++    <main className="mx-auto max-w-6xl px-4 pb-28 pt-6">
++      <div className="flex justify-between items-center mb-4">
++        <h1 className="text-2xl md:text-3xl font-extrabold text-blue-700 dark:text-blue-300">
++          Athletes
++        </h1>
++        <button
++          onClick={() => setShowModal(true)}
++          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
++        >
++          + Add Athlete
++        </button>
++      </div>
++
++      {athletes.length === 0 ? (
++        <p className="text-gray-600 dark:text-gray-400">No athletes yet.</p>
++      ) : (
++        <ul className="space-y-3">
++          {athletes.map((ath) => (
++            <li
++              key={ath.id}
++              className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800"
++            >
++              <div className="font-semibold">{ath.name}</div>
++              <div className="text-sm text-gray-500 dark:text-gray-400">
++                {ath.position || 'No position'} &nbsp;|&nbsp; {ath.notes || 'No notes'}
++              </div>
++            </li>
++          ))}
++        </ul>
++      )}
++
++      <AddAthleteModal
++        open={showModal}
++        onClose={() => setShowModal(false)}
++        onCreate={async (payload) => {
++          await addAthlete(payload);
++        }}
++      />
++    </main>
++  );
++}
+*** End Patch
+
+*** Begin Patch
+*** Update File: src/features/videos/pages/VideosScreen.tsx
+@@
+-import React from 'react';
+-import { useNavigate } from 'react-router-dom';
+-import { useVideos } from '../hooks/useVideos';
+-import { uploadVideo } from '../services/videos.service';
+-import UploadButton from '../components/UploadButton';
+-import { Play } from 'lucide-react';
+-
+-export default function VideosScreen() {
+-  const { videos, setVideos } = useVideos();
+-  const navigate = useNavigate();
+-
+-  async function handleUpload(file: File) {
+-    const created = await uploadVideo(file);
+-    if (created) {
+-      setVideos((prev) => [created, ...prev]);
+-    }
+-  }
+-
+-  return (
+-    <main className="mx-auto max-w-6xl px-4 pb-28 pt-6">
+-      <div className="flex justify-between items-center mb-4">
+-        <h1 className="text-2xl md:text-3xl font-extrabold text-blue-700 dark:text-blue-300">
+-          Videos
+-        </h1>
+-        <UploadButton onUpload={handleUpload} />
+-      </div>
+-
+-      {videos.length === 0 ? (
+-        <p className="text-gray-600 dark:text-gray-400">No videos uploaded yet.</p>
+-      ) : (
+-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+-          {videos.map((v) => (
+-            <button
+-              key={v.id}
+-              onClick={() => navigate(`/videos/${v.id}`)}
+-              className="aspect-video rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 dark:bg-gray-800 flex items-center justify-center hover:shadow-lg transition-all"
+-            >
+-              {v.url ? (
+-                <video src={v.url} className="w-full h-full object-cover" />
+-              ) : (
+-                <Play className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+-              )}
+-            </button>
+-          ))}
+-        </div>
+-      )}
+-    </main>
+-  );
+-}
++import React from 'react';
++import { useNavigate } from 'react-router-dom';
++import { useVideos } from '../hooks/useVideos';
++import UploadButton from '../components/UploadButton';
++import { Play } from 'lucide-react';
++
++export default function VideosScreen() {
++  const { videos, addVideo } = useVideos();
++  const navigate = useNavigate();
++
++  async function handleUpload(file: File) {
++    await addVideo(file);
++  }
++
++  return (
++    <main className="mx-auto max-w-6xl px-4 pb-28 pt-6">
++      <div className="flex justify-between items-center mb-4">
++        <h1 className="text-2xl md:text-3xl font-extrabold text-blue-700 dark:text-blue-300">
++          Videos
++        </h1>
++        <UploadButton onUpload={handleUpload} />
++      </div>
++
++      {videos.length === 0 ? (
++        <p className="text-gray-600 dark:text-gray-400">No videos uploaded yet.</p>
++      ) : (
++        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
++          {videos.map((v) => (
++            <button
++              key={v.id}
++              onClick={() => navigate(`/videos/${v.id}`)}
++              className="aspect-video rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 dark:bg-gray-800 flex items-center justify-center hover:shadow-lg transition-all"
++            >
++              {v.url ? (
++                <video src={v.url} className="w-full h-full object-cover" />
++              ) : (
++                <Play className="h-8 w-8 text-gray-500 dark:text-gray-400" />
++              )}
++            </button>
++          ))}
++        </div>
++      )}
++    </main>
++  );
++}
+*** End Patch

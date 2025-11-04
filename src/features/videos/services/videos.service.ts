@@ -17,7 +17,9 @@ export async function fetchVideos() {
 
 // Upload a video file and insert metadata
 export async function uploadVideo(file: File) {
-  if (!supabase) return null;
+  if (!supabase) {
+    throw new Error('Supabase client not initialized');
+  }
   const bucket = 'videos';
   const path = `${Date.now()}-${file.name}`;
 
@@ -27,7 +29,7 @@ export async function uploadVideo(file: File) {
     .upload(path, file, { upsert: false });
   if (uploadError) {
     console.error('uploadVideo upload error', uploadError);
-    return null;
+    throw new Error(`Upload failed: ${uploadError.message}`);
   }
 
   // Get a public URL
@@ -42,7 +44,7 @@ export async function uploadVideo(file: File) {
     .single();
   if (insertError) {
     console.error('uploadVideo insert error', insertError);
-    return null;
+    throw new Error(`Failed to save video metadata: ${insertError.message}`);
   }
 
   return data;

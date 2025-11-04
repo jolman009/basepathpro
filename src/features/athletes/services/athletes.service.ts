@@ -29,8 +29,7 @@ export async function createAthlete({
   notes?: string;
 }) {
   if (!supabase) {
-    console.error('Supabase client not initialized');
-    return null;
+    throw new Error('Supabase client not initialized');
   }
   const { data, error } = await supabase
     .from('athletes')
@@ -40,7 +39,7 @@ export async function createAthlete({
 
   if (error) {
     console.error('createAthlete error', error);
-    return null;
+    throw new Error(`Failed to create athlete: ${error.message}`);
   }
   return data;
 }

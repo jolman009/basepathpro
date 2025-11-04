@@ -1,19 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useVideos } from '../hooks/useVideos';
-import { uploadVideo } from '../services/videos.service';
 import UploadButton from '../components/UploadButton';
 import { Play } from 'lucide-react';
 
 export default function VideosScreen() {
-  const { videos, setVideos } = useVideos();
+  const { videos, loading, error, addVideo } = useVideos();
   const navigate = useNavigate();
 
   async function handleUpload(file: File) {
-    const created = await uploadVideo(file);
-    if (created) {
-      setVideos((prev) => [created, ...prev]);
-    }
+    await addVideo(file);
   }
 
   return (
@@ -25,7 +21,17 @@ export default function VideosScreen() {
         <UploadButton onUpload={handleUpload} />
       </div>
 
-      {videos.length === 0 ? (
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        </div>
+      ) : videos.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-400">No videos uploaded yet.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
