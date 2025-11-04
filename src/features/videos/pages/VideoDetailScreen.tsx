@@ -14,10 +14,13 @@ import {
   Eraser,
   Save,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  TrendingUp
 } from 'lucide-react';
 import VideoAnnotationCanvas, { type Annotation } from '../components/VideoAnnotationCanvas';
+import MetricsInputModal from '../components/MetricsInputModal';
 import { fetchAnnotations, saveAnnotations } from '../services/annotations.service';
+import { createSession } from '../../athletes/services/sessions.service';
 import { supabase } from '../../../lib/supabase';
 
 export default function VideoDetailScreen() {
@@ -38,6 +41,10 @@ export default function VideoDetailScreen() {
   const [resetTrigger, setResetTrigger] = useState(0);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Metrics modal state
+  const [showMetricsModal, setShowMetricsModal] = useState(false);
+  const [athletes, setAthletes] = useState<Array<{ id: string; name: string; position?: string }>>([]);
 
   // Load video data and annotations
   useEffect(() => {
@@ -64,6 +71,16 @@ export default function VideoDetailScreen() {
         if (id) {
           const loadedAnnotations = await fetchAnnotations(id);
           setAnnotations(loadedAnnotations);
+        }
+
+        // Load athletes for metrics modal
+        const { data: athletesData } = await supabase
+          .from('athletes')
+          .select('id, name, position')
+          .order('name');
+
+        if (athletesData) {
+          setAthletes(athletesData);
         }
       } catch (error) {
         console.error('Error loading video and annotations:', error);
@@ -110,6 +127,30 @@ export default function VideoDetailScreen() {
       }
     };
   }, []);
+
+  // Handle metrics save
+  async function handleSaveMetrics(data: {
+    athleteId: string;
+    sessionType: 'batting' | 'pitching';
+    metrics: { [key: string]: number };
+    notes?: string;
+  }) {
+    if (!id) return;
+
+    const metricsArray = Object.entries(data.metrics).map(([name, value]) => ({
+      metric_name: name,
+      metric_value: value,
+      unit: name.includes('speed') || name.includes('velocity') ? 'mph' : name.includes('angle') ? 'degrees' : name.includes('rating') ? '/10' : ''
+    }));
+
+    await createSession({
+      athlete_id: data.athleteId,
+      video_id: id,
+      session_type: data.sessionType,
+      notes: data.notes,
+      metrics: metricsArray
+    });
+  }
 
   // Video control functions
   function togglePlay() {
@@ -380,6 +421,35 @@ export default function VideoDetailScreen() {
           </span>
         </div>
       </div>
+
+      {/* Performance Metrics Section */}
+      <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 shadow-lg text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Performance Metrics
+            </h3>
+            <p className="text-green-100">
+              Record bat speed, launch angle, pitch velocity, and more for this session
+            </p>
+          </div>
+          <button
+            onClick={() => setShowMetricsModal(true)}
+            className="px-6 py-3 bg-white text-green-700 rounded-xl font-semibold hover:bg-green-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            Add Metrics
+          </button>
+        </div>
+      </div>
+
+      {/* Metrics Modal */}
+      <MetricsInputModal
+        open={showMetricsModal}
+        onClose={() => setShowMetricsModal(false)}
+        onSave={handleSaveMetrics}
+        athletes={athletes}
+      />
     </main>
   );
 }
