@@ -74,13 +74,15 @@ export default function VideoDetailScreen() {
         }
 
         // Load athletes for metrics modal
-        const { data: athletesData } = await supabase
-          .from('athletes')
-          .select('id, name, position')
-          .order('name');
+        if (supabase) {
+          const { data: athletesData } = await supabase
+            .from('athletes')
+            .select('id, name, position')
+            .order('name');
 
-        if (athletesData) {
-          setAthletes(athletesData);
+          if (athletesData) {
+            setAthletes(athletesData);
+          }
         }
       } catch (error) {
         console.error('Error loading video and annotations:', error);
