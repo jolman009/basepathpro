@@ -36,10 +36,14 @@ export async function uploadVideo(file: File) {
   const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
   const url = pub?.publicUrl;
 
+  // Get current user or use a default user_id
+  const { data: { user } } = await supabase.auth.getUser();
+  const userId = user?.id || '00000000-0000-0000-0000-000000000000'; // fallback for demo
+
   // Insert row in database
   const { data, error: insertError } = await supabase
     .from('videos')
-    .insert({ name: file.name, url })
+    .insert({ name: file.name, url, user_id: userId })
     .select()
     .single();
   if (insertError) {
